@@ -1,18 +1,27 @@
 #define RAYGUI_IMPLEMENTATION
 #include "raylib.h"
-#include "raygui.h"
+#include "game.h"
 
 int main(void)
 {
-    InitWindow(800, 450, "My Game");
-    SetTargetFPS(60);
+    InitWindow(1800, 1200, "4k snake");
+    SetTargetFPS(GetMonitorRefreshRate(GetCurrentMonitor()));
+
+    Rectangle board_shape;
+    Snake snake;
+    Vec2i apple;
+    bool paused = true;
+
+    Texture2D apple_texture = LoadTexture("assets/apple.png");
+
+    game_init(&board_shape, &snake, &apple);
+
+    double delta = GetTime();
     while (!WindowShouldClose())
     {
-        BeginDrawing();
-        ClearBackground(RAYWHITE);
-        DrawText("Hello raylib!", 100, 200, 20, DARKGRAY);
-        EndDrawing();
+        game_step(&board_shape, &snake, &apple, &delta, &paused, &apple_texture);
     }
-    CloseWindow();
+    if (IsWindowReady())
+        CloseWindow();
     return 0;
 }

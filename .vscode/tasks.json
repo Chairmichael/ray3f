@@ -7,6 +7,9 @@
             "command": "C:\\raylib\\w64devkit\\bin\\gcc",
             "args": [
                 "src/main.c",
+                "src/game.c",
+                "-g",
+                "-O0",
                 "-o",
                 "game.exe",
                 "-I",
