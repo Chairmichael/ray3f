@@ -112,7 +112,7 @@ void game_step(Rectangle *board_shape, Snake *snake, Vec2i *apple, double *last_
 {
     bool restart = false;
     Direction input_dir = handle_input(board_shape, &restart, paused);
-    set_snake_dir(&snake->pending, input_dir);
+    set_snake_dir(snake->dir, &snake->pending, input_dir);
     if (restart)
     {
         *paused = true;
@@ -162,8 +162,10 @@ void game_draw(Rectangle *board_shape, Snake *snake, Vec2i *apple, Texture2D *ap
     int tile_size = board_shape->width / BOARD_LEN;
 
     char score[SCORE_STRING_LEN];
+    int font_size = GetScreenHeight() / SCR_FONT_FRACTION;
     snprintf(score, sizeof score, "%d", len(snake));
-    DrawText(score, 2, 2, tile_size / 3, ORANGE);
+    int str_width = MeasureText(score, font_size);
+    DrawText(score, board_shape->x - str_width - board_shape->y / 2, board_shape->y, font_size, ORANGE);
 
     float apple_scale = (float)tile_size / apple_texture->width;
     Vector2 apple_pos = {
@@ -182,10 +184,12 @@ void game_draw(Rectangle *board_shape, Snake *snake, Vec2i *apple, Texture2D *ap
             tile_size - 2 * padding,
             tile_size - 2 * padding,
         };
-        DrawRectangleRounded(rec, 0.2, 4, GREEN);
-        DrawRectangleRoundedLinesEx(rec, 0.2, 4, 5, (Color){0, 40, 5, 255});
+        int line_thickness = CLAMP(tile_size / 25, 3, 10);
+        DrawRectangleRounded(rec, ROUNDNESS, ROUNDED_SEGMENTS, GREEN);
+        DrawRectangleRoundedLinesEx(rec, ROUNDNESS, ROUNDED_SEGMENTS, line_thickness, DARKERGREEN);
     }
-    
+    DrawFPS(2, 2);
+
     EndDrawing();
 }
 
@@ -235,9 +239,9 @@ Direction handle_input(Rectangle *board_shape, bool *restart, bool *paused)
     return dir;
 }
 
-void set_snake_dir(Direction *pending_dir, Direction input_dir)
+void set_snake_dir(Direction cur_dir, Direction *pending_dir, Direction input_dir)
 {
-    if (input_dir == DIR_NONE || *pending_dir == input_dir || !((*pending_dir - input_dir) % 2))
+    if (input_dir == DIR_NONE || cur_dir == input_dir || !((cur_dir - input_dir) % 2))
         return;
     *pending_dir = input_dir;
 }
