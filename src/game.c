@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <time.h>
+#include <math.h>
 #include <string.h>
 #include "game.h"
 
@@ -48,6 +49,62 @@ static bool contains(Snake *snake, Vec2i vec)
     return false;
 }
 
+static Vector2 rotate_about(Vector2 vec, Vector2 pivot, float angle)
+{
+    vec = Vector2Subtract(vec, pivot);
+    vec = Vector2Rotate(vec, angle);
+    vec = Vector2Add(vec, pivot);
+    return vec;
+}
+
+static float dir_to_rad(Direction dir)
+{
+    float rads = dir >= DIR_RIGHT && dir <= DIR_LEFT ? dir * 90.0f : 0.0;
+    return rads * DEG2RAD;
+}
+
+static Vec2i dir_to_vec2i(Direction dir)
+{
+    switch (dir)
+    {
+    case DIR_UP:
+        return (Vec2i){0, -1};
+    case DIR_RIGHT:
+        return (Vec2i){1, 0};
+    case DIR_DOWN:
+        return (Vec2i){0, 1};
+    case DIR_LEFT:
+        return (Vec2i){-1, 0};
+    default:
+        return (Vec2i){0, 0};
+    }
+}
+
+static Vec2i vec2i_add(Vec2i a, Vec2i b)
+{
+    return (Vec2i){a.x + b.x, a.y + b.y};
+}
+static Vec2i vec2i_subtract(Vec2i a, Vec2i b)
+{
+    return (Vec2i){a.x - b.x, a.y - b.y};
+}
+static Vec2i vec2i_rotate(Vec2i vec, int deg)
+{
+    int quarter_turns = ((deg / 90) % 4 + 4) % 4;
+
+    switch (quarter_turns)
+    {
+    case 1:
+        return (Vec2i){-vec.y, vec.x};
+    case 2:
+        return (Vec2i){-vec.x, -vec.y};
+    case 3:
+        return (Vec2i){vec.y, -vec.x};
+    default:
+        return vec;
+    }
+}
+
 int len(Snake *snake)
 {
     return (snake->head - snake->tail + SNAKE_MAX) % SNAKE_MAX + 1;
@@ -79,17 +136,20 @@ void game_init(Rectangle *board_shape, Snake *snake, Vec2i *apple)
     snake->tail = 0;
     snake->body[snake->head].x = GetRandomValue(spawn_limit_left, spawn_limit_right);
     snake->body[snake->head].y = GetRandomValue(spawn_limit_top, spawn_limit_bottom);
+    Vec2i bounds = {BOARD_LIMIT, BOARD_LIMIT};
 
     for (size_t i = snake->head; i > snake->tail; i--)
     {
-        if (snake->dir == DIR_UP)
-            snake->body[i - 1] = (Vec2i){snake->body[i].x, snake->body[i].y + 1};
-        else if (snake->dir == DIR_LEFT)
-            snake->body[i - 1] = (Vec2i){snake->body[i].x + 1, snake->body[i].y};
-        else if (snake->dir == DIR_DOWN)
-            snake->body[i - 1] = (Vec2i){snake->body[i].x, snake->body[i].y - 1};
-        else if (snake->dir == DIR_RIGHT)
-            snake->body[i - 1] = (Vec2i){snake->body[i].x - 1, snake->body[i].y};
+        Vec2i dir_vec = dir_to_vec2i(snake->dir);
+        Vec2i new_segment = vec2i_subtract(snake->body[i], dir_vec);
+        if (!check_board_bounds(bounds, new_segment))
+        {
+            Vec2i shift = vec2i_rotate(dir_vec, 90);
+            if (!check_board_bounds(bounds, vec2i_subtract(snake->body[i], shift)))
+                shift = vec2i_rotate(dir_vec, -90);
+            new_segment = vec2i_subtract(snake->body[i], shift);
+        }
+        snake->body[i - 1] = new_segment;
     }
 
     *apple = get_random_point_excluding(snake, BOARD_LIMIT, BOARD_LIMIT);
@@ -174,7 +234,9 @@ void game_draw(Rectangle *board_shape, Snake *snake, Vec2i *apple, Texture2D *ap
     };
     DrawTextureEx(*apple_texture, apple_pos, 0, apple_scale, WHITE);
 
+    // snake body
     float padding = tile_size * SCR_WORLD_PADDING / 2;
+    int line_thickness = CLAMP(tile_size / 25, 3, 10);
     for (size_t i = 0; i < len(snake); i++)
     {
         size_t index = INDEX(snake, i);
@@ -184,10 +246,27 @@ void game_draw(Rectangle *board_shape, Snake *snake, Vec2i *apple, Texture2D *ap
             tile_size - 2 * padding,
             tile_size - 2 * padding,
         };
-        int line_thickness = CLAMP(tile_size / 25, 3, 10);
         DrawRectangleRounded(rec, ROUNDNESS, ROUNDED_SEGMENTS, GREEN);
         DrawRectangleRoundedLinesEx(rec, ROUNDNESS, ROUNDED_SEGMENTS, line_thickness, DARKERGREEN);
     }
+
+    // snake nose
+    Vector2 head_f = {board_shape->x + snake->body[snake->head].x * tile_size,
+                      board_shape->y + snake->body[snake->head].y * tile_size};
+    Vector2 head_center = {head_f.x + tile_size / 2, head_f.y + tile_size / 2};
+    Vector2 points[4] = {{-6, 8}, {-1.5, 2}, {0, 0}, {0, 0}};
+    points[2] = (Vector2){points[0].x * -1, points[0].y};
+    points[3] = (Vector2){points[1].x * -1, points[1].y};
+    for (size_t i = 0; i < 4; i++)
+    {
+        points[i] = Vector2Add(Vector2Scale(points[i], tile_size / 20), head_f);
+        points[i] = Vector2Add(points[i], (Vector2){tile_size / 2, 0});
+        points[i] = rotate_about(points[i], head_center, dir_to_rad(snake->dir));
+    }
+
+    DrawLineEx(points[0], points[1], line_thickness, BROWN);
+    DrawLineEx(points[2], points[3], line_thickness, BROWN);
+
     DrawFPS(2, 2);
 
     EndDrawing();
@@ -316,23 +395,11 @@ void check_apple(Snake *snake, Vec2i *apple)
     {
         snake->tail = snake->tail == 0 ? SNAKE_MAX - 1 : snake->tail - 1;
         *apple = get_random_point_excluding(snake, BOARD_LIMIT, BOARD_LIMIT);
-        print_vec2i(apple);
     }
 }
 
 Vec2i get_random_point_excluding(Snake *snake, int max_x, int max_y)
 {
-    // while (true)
-    // {
-    //     Vec2i vec = {GetRandomValue(0, max_x), GetRandomValue(0, max_y)};
-    //     bool found = false;
-    //     for (size_t i = 0; i < filter_len && !found; i++)
-    //         if (same(vec, filter[i]))
-    //             found = true;
-    //     if (!found)
-    //         return vec;
-    // }
-
     if (max_x * max_y > SNAKE_MAX)
     {
         fprintf(stderr, "get_random_point_excluding: Larger than SNAKE_MAX!\n");
@@ -356,6 +423,11 @@ Vec2i get_random_point_excluding(Snake *snake, int max_x, int max_y)
         return (Vec2i){-1, -1};
     }
     return vecs[GetRandomValue(0, end - 1)];
+}
+
+bool check_board_bounds(Vec2i bounds, Vec2i vec)
+{
+    return vec.x >= 0 && vec.x <= bounds.x && vec.y >= 0 && vec.y <= bounds.y;
 }
 
 void print_snake(Snake *snake)

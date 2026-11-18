@@ -6,7 +6,7 @@
 #include "raymath.h"
 
 #define SCR_WORLD_PADDING 0.05
-#define BOARD_LEN 5
+#define BOARD_LEN 4
 #define BOARD_LIMIT (BOARD_LEN - 1)
 #define SNAKE_MAX (BOARD_LEN * BOARD_LEN)
 #define START_SNAKE_LEN 3
@@ -33,9 +33,9 @@ typedef enum
 {
     DIR_NONE = -1,
     DIR_UP,
-    DIR_LEFT,
-    DIR_DOWN,
     DIR_RIGHT,
+    DIR_DOWN,
+    DIR_LEFT,
 } Direction;
 
 typedef struct
@@ -63,5 +63,6 @@ void set_snake_dir(Direction cur_dir, Direction *pending_dir, Direction input_di
 void print_snake(Snake *snake);
 int len(Snake *snake);
 Vec2i *next(Snake *snake);
+bool check_board_bounds(Vec2i size, Vec2i vec);
 
 #endif
