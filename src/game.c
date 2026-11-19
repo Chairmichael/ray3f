@@ -79,7 +79,6 @@ static Vec2i dir_to_vec2i(Direction dir)
         return (Vec2i){0, 0};
     }
 }
-
 static Vec2i vec2i_add(Vec2i a, Vec2i b)
 {
     return (Vec2i){a.x + b.x, a.y + b.y};
@@ -141,7 +140,9 @@ void game_init(Rectangle *board_shape, Snake *snake, Vec2i *apple)
     for (size_t i = snake->head; i > snake->tail; i--)
     {
         Vec2i dir_vec = dir_to_vec2i(snake->dir);
+        // make new segment by subtracting the direction vector from the snake body
         Vec2i new_segment = vec2i_subtract(snake->body[i], dir_vec);
+        // if outside bounds, rotate the direction vector by 90 degrees
         if (!check_board_bounds(bounds, new_segment))
         {
             Vec2i shift = vec2i_rotate(dir_vec, 90);
