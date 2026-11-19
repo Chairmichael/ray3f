@@ -12,12 +12,6 @@ typedef struct
 
 static Vec2 update_window(bool fullscreen)
 {
-    if (!IsWindowReady())
-    {
-        SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-        InitWindow(500, 500, "BIRDSNAKE!!!");
-    }
-
     int monitor = GetCurrentMonitor();
     int width = GetMonitorWidth(monitor) * WIDTH_SCALE;
     Vec2 size = {width, width / WINDOWED_ASPECT_RATIO};
@@ -38,6 +32,8 @@ static Vec2 update_window(bool fullscreen)
 
 int main(void)
 {
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    InitWindow(500, 500, "BIRDSNAKE!!!");
     Vec2 window_size = update_window(false);
 
     Rectangle board_shape;
