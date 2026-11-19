@@ -169,46 +169,33 @@ void get_board_size(Rectangle *game_size)
     //        (int)game_size->x, (int)game_size->y, (int)game_size->width, (int)game_size->height);
 }
 
-void game_step(Rectangle *board_shape, Snake *snake, Vec2i *apple, double *last_step, bool *paused, Texture2D *apple_texture)
+void game_step(GameStatus *status, Rectangle *board_shape, Snake *snake, Vec2i *apple, double *last_step, bool *paused, Texture2D *apple_texture)
 {
     bool restart = false;
-    Direction input_dir = handle_input(board_shape, &restart, paused);
+    Direction input_dir = handle_input(board_shape, &restart, paused, *status);
     set_snake_dir(snake->dir, &snake->pending, input_dir);
     if (restart)
     {
+        *status = GS_NORMAL;
         *paused = true;
         game_init(board_shape, snake, apple);
     }
 
-    GameStatus status = GS_NORMAL;
+    game_draw(*status, board_shape, snake, apple, apple_texture);
+
     if (!*paused && GetTime() - *last_step >= GAME_SPEED)
     {
         *last_step = GetTime();
-        // game logic
-        //      move snake
-        move_snake(snake);
-        // print_snake(snake);
-        //      check for apple
+        if (*status == GS_NORMAL)
+            move_snake(snake);
         check_apple(snake, apple);
-        //      check eating self
-        status = check_snake(snake);
-        //      game over fluff
-        if (status == GS_LOST || status == GS_WIN)
-        {
-            if (status == GS_LOST)
-                printf("\nLOST!\nscore: %d\n\n", len(snake));
-            if (status == GS_WIN)
-                printf("\nWON!\nscore: %d\n\n", len(snake));
-            CloseWindow();
-        }
+        if (apple->x == -1 && apple->y == -1)
+            *apple = (Vec2i){-100, -100};
+        *status = check_snake(snake);
     }
-
-    // draw
-    if (status == GS_NORMAL)
-        game_draw(board_shape, snake, apple, apple_texture);
 }
 
-void game_draw(Rectangle *board_shape, Snake *snake, Vec2i *apple, Texture2D *apple_texture)
+void game_draw(GameStatus status, Rectangle *board_shape, Snake *snake, Vec2i *apple, Texture2D *apple_texture)
 {
     BeginDrawing();
     ClearBackground(BLANK);
@@ -268,17 +255,35 @@ void game_draw(Rectangle *board_shape, Snake *snake, Vec2i *apple, Texture2D *ap
     DrawLineEx(points[0], points[1], line_thickness, BROWN);
     DrawLineEx(points[2], points[3], line_thickness, BROWN);
 
-    DrawFPS(2, 2);
+    if (status == GS_LOST)
+    {
+        int str_width = MeasureText("LOST!", font_size);
+        DrawText("LOST!", board_shape->x - str_width - board_shape->y / 2, board_shape->y + font_size * 1.1, font_size, ORANGE);
+    }
+    else if (status == GS_WIN)
+    {
+        int str_width = MeasureText("WON!", font_size);
+        DrawText("WON!", board_shape->x - str_width - board_shape->y / 2, board_shape->y + font_size * 1.1, font_size, ORANGE);
+    }
 
+    DrawFPS(2, 2);
     EndDrawing();
 }
 
-Direction handle_input(Rectangle *board_shape, bool *restart, bool *paused)
+Direction handle_input(Rectangle *board_shape, bool *restart, bool *paused, GameStatus status)
 {
     bool paused_toggled = false;
     Direction dir = DIR_NONE;
-    int key_pressed;
-    while ((key_pressed = GetKeyPressed()))
+    int key_pressed = GetKeyPressed();
+    if (status != GS_NORMAL && key_pressed != 0)
+    {
+        *restart = true;
+        *paused = true;
+        while (GetKeyPressed())
+            ;
+        return dir;
+    }
+    do
     {
         switch (key_pressed)
         {
@@ -313,7 +318,7 @@ Direction handle_input(Rectangle *board_shape, bool *restart, bool *paused)
         default:
             break;
         }
-    }
+    } while ((key_pressed = GetKeyPressed()));
     if (!paused_toggled && dir != DIR_NONE)
         *paused = false;
     return dir;

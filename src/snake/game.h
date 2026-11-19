@@ -17,7 +17,7 @@
 #define CLAMP(value, min, max) (value < min ? min : value > max ? max \
                                                                 : value)
 
-#define SCR_FONT_FRACTION 10
+#define SCR_FONT_FRACTION 12
 #define DARKERGREEN (Color){0, 40, 5, 255}
 #define ROUNDNESS 0.2
 #define ROUNDED_SEGMENTS 8
@@ -51,10 +51,10 @@ typedef struct
 } Snake;
 
 void game_init(Rectangle *board_shape, Snake *snake, Vec2i *apple);
-void game_step(Rectangle *board_shape, Snake *snake, Vec2i *apple, double *detla, bool *paused, Texture2D *apple_texture);
-void game_draw(Rectangle *board_shape, Snake *snake, Vec2i *apple, Texture2D *apple_texture);
+void game_step(GameStatus *status, Rectangle *board_shape, Snake *snake, Vec2i *apple, double *last_step, bool *paused, Texture2D *apple_texture);
+void game_draw(GameStatus status, Rectangle *board_shape, Snake *snake, Vec2i *apple, Texture2D *apple_texture);
 void get_board_size(Rectangle *board_shape);
-Direction handle_input(Rectangle *board_shape, bool *restart, bool *paused);
+Direction handle_input(Rectangle *board_shape, bool *restart, bool *paused, GameStatus status);
 void move_snake(Snake *snake);
 void check_apple(Snake *snake, Vec2i *apple);
 Vec2i get_random_point_excluding(Snake *snake, int max_x, int max_y);

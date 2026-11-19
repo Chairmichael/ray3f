@@ -19,9 +19,10 @@ int main(void)
     game_init(&board_shape, &snake, &apple);
 
     double delta = GetTime();
+    GameStatus status = GS_NORMAL;
     while (!WindowShouldClose())
     {
-        game_step(&board_shape, &snake, &apple, &delta, &paused, &apple_texture);
+        game_step(&status, &board_shape, &snake, &apple, &delta, &paused, &apple_texture);
     }
     if (IsWindowReady())
         CloseWindow();
