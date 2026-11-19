@@ -31,8 +31,10 @@ endef
 
 define GAME_template
 ifneq ($$(call asset_hdrs,$(1)),)
-$(BUILD_DIR)/$(1)_assets.h: $$(call asset_hdrs,$(1))
-	cat $$^ > $$@
+$(BUILD_DIR)/$(1)_assets.h: $$(call asset_hdrs,$(1)) Makefile
+	@printf '#ifndef RAY3F_$(subst -,_,$(1))_ASSETS_H\n#define RAY3F_$(subst -,_,$(1))_ASSETS_H\n\n' > $$@
+	cat $$(call asset_hdrs,$(1)) >> $$@
+	@printf '\n#endif\n' >> $$@
 
 src/$(1)/$(1)_assets.h: $(BUILD_DIR)/$(1)_assets.h
 	cp $$< $$@
@@ -46,7 +48,6 @@ $(1)-assets: $$(GAME_ASSET_HDR_$(1))
 $(1).exe: $$(wildcard src/$(1)/*.c) $$(wildcard src/$(1)/*.h) $$(GAME_ASSET_HDR_$(1))
 	$$(CC) $$(FLAGS) $$(wildcard src/$(1)/*.c) -o $$@ \
 		-I$$(RAYLIB_DIR)/src \
-		-I$$(RAYLIB_DIR)/examples/core \
 		-L$$(RAYLIB_DIR)/src \
 		-lraylib -lopengl32 -lgdi32 -lwinmm
 endef
