@@ -1,2 +1,4 @@
 *.exe
 *.zip
+build/
+src/*/*_assets.h

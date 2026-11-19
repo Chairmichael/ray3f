@@ -11,7 +11,7 @@
 #define SNAKE_MAX (BOARD_LEN * BOARD_LEN)
 #define START_SNAKE_LEN 3
 #define SPAWN_BUFFER 2
-#define GAME_SPEED 0.25
+#define GAME_SPEED 0.2
 #define SCORE_STRING_LEN 10
 #define INDEX(snake, i) (((snake)->tail + (i)) % SNAKE_MAX)
 #define CLAMP(value, min, max) (value < min ? min : value > max ? max \

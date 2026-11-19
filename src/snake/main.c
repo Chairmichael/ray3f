@@ -1,6 +1,7 @@
 #define RAYGUI_IMPLEMENTATION
 #include "raylib.h"
 #include "game.h"
+#include "snake_assets.h"
 
 int main(void)
 {
@@ -12,7 +13,8 @@ int main(void)
     Vec2i apple;
     bool paused = true;
 
-    Texture2D apple_texture = LoadTexture("assets/apple.png");
+    Image apple_img = LoadImageFromMemory(".png", apple_png, apple_png_len);
+    Texture2D apple_texture = LoadTextureFromImage(apple_img);
 
     game_init(&board_shape, &snake, &apple);
 
