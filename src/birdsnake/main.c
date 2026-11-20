@@ -10,8 +10,15 @@ typedef struct
     int x, y;
 } Vec2;
 
-static Vec2 update_window(bool fullscreen)
+static Vec2 setup_window(bool fullscreen)
 {
+    if (!IsWindowReady())
+    {
+        SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+        InitWindow(600, 400, "BIRDSNAKE!!!");
+        SetWindowMinSize(600, 400);
+    }
+
     int monitor = GetCurrentMonitor();
     int width = GetMonitorWidth(monitor) * WIDTH_SCALE;
     Vec2 size = {width, width / WINDOWED_ASPECT_RATIO};
@@ -23,18 +30,26 @@ static Vec2 update_window(bool fullscreen)
         SetWindowPosition(mpos.x + (GetMonitorWidth(monitor) - size.x) / 2,
                           mpos.y + (GetMonitorHeight(monitor) - size.y) / 2);
     }
-    if (fullscreen)
+    else if (fullscreen)
         ToggleBorderlessWindowed();
 
     SetTargetFPS(GetMonitorRefreshRate(monitor));
     return size;
 }
 
+static Vec2 update_window(bool fullscreen)
+{
+    if (!IsWindowFullscreen() && fullscreen)
+        ToggleBorderlessWindowed();
+    else if (IsWindowFullscreen() && !fullscreen)
+        ToggleBorderlessWindowed();
+
+    return (Vec2){GetScreenWidth(), GetScreenHeight()};
+}
+
 int main(void)
 {
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(500, 500, "BIRDSNAKE!!!");
-    Vec2 window_size = update_window(false);
+    Vec2 window_size = setup_window(false);
 
     Rectangle board_shape;
 
@@ -46,6 +61,14 @@ int main(void)
     // #endif
     int x = 0;
     char text[12] = "0";
+
+    Rectangle rect = {
+        window_size.x / 2 - window_size.x / 5 / 2,
+        window_size.y / 2 - window_size.y / 5 / 2,
+        window_size.x / 5,
+        window_size.x / 5,
+    };
+
     while (!WindowShouldClose())
     {
         if (IsKeyPressed(KEY_ENTER))
@@ -56,11 +79,20 @@ int main(void)
         {
             x++;
             snprintf(text, sizeof text, "%d", x);
+            window_size = update_window(false);
+            rect = (Rectangle){
+                window_size.x / 2 - window_size.x / 5 / 2,
+                window_size.y / 2 - window_size.y / 5 / 2,
+                window_size.x / 5,
+                window_size.x / 5,
+            };
         }
 
+        DrawRectangleRec(rect, ORANGE);
         DrawText(text, 10, 10, 40, ORANGE);
         EndDrawing();
     }
+
     if (IsWindowReady())
         CloseWindow();
     return 0;
