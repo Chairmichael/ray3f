@@ -1,9 +1,11 @@
-#include <stdio.h>
+#include "birdsnake_assets.h"
 #include "raylib.h"
-// #include "birdsnake_assets.h"
+#include <stdio.h>
 
 #define WIDTH_SCALE 0.65f
 #define WINDOWED_ASPECT_RATIO (3.0 / 2.0)
+#define SMALLEST(x, y) (x < y ? x : y)
+#define LARGEST(x, y) (x > y ? x : y)
 
 typedef struct
 {
@@ -47,18 +49,25 @@ static Vec2 update_window(bool fullscreen)
     return (Vec2){GetScreenWidth(), GetScreenHeight()};
 }
 
+static void draw_texture_scaled(Texture tex, Rectangle rec)
+{
+    Rectangle tex_rec = {0, 0, tex.width, tex.height};
+    DrawTexturePro(tex, tex_rec, rec, (Vector2){0}, 0, WHITE);
+}
+
 int main(void)
 {
     Vec2 window_size = setup_window(false);
+    Rectangle window_rect = {0, 0, window_size.x, window_size.y};
 
     Rectangle board_shape;
 
-    // #ifdef RAY3F_birdsnake_ASSETS_H
-    //     Image apple_img = LoadImageFromMemory(".png", apple_png, apple_png_len);
-    //     Texture2D apple_texture = LoadTextureFromImage(apple_img);
-    // #else
-    //     Texture2D apple_texture = LoadTexture("assets/birdsnake/apple.png");
-    // #endif
+#ifdef RAY3F_birdsnake_ASSETS_H
+    Image apple_img = LoadImageFromMemory(".png", apple_png, apple_png_len);
+    Texture2D apple_texture = LoadTextureFromImage(apple_img);
+#else
+    Texture2D apple_texture = LoadTexture("assets/birdsnake/apple.png");
+#endif
     int x = 0;
     char text[12] = "0";
 
@@ -73,13 +82,13 @@ int main(void)
     {
         if (IsKeyPressed(KEY_ENTER))
             ToggleBorderlessWindowed();
-        BeginDrawing();
-        ClearBackground(GRAY);
         if (IsWindowResized())
         {
             x++;
             snprintf(text, sizeof text, "%d", x);
             window_size = update_window(false);
+            window_rect.width = window_size.x;
+            window_rect.height = window_size.y;
             rect = (Rectangle){
                 window_size.x / 2 - window_size.x / 5 / 2,
                 window_size.y / 2 - window_size.y / 5 / 2,
@@ -87,9 +96,31 @@ int main(void)
                 window_size.x / 5,
             };
         }
+        BeginDrawing();
+        ClearBackground(GRAY);
+        draw_texture_scaled(apple_texture, window_rect);
 
+        DrawText("This is game text", 80, 50, 60, ORANGE);
         DrawRectangleRec(rect, ORANGE);
         DrawText(text, 10, 10, 40, ORANGE);
+        if (IsKeyDown(KEY_SPACE))
+        {
+            // gray background
+            DrawRectangleRec(window_rect, (Color){0, 0, 0, 150});
+            float menu_scale = 0.7;
+            int menu_size = SMALLEST(window_size.x, window_size.y) * menu_scale;
+            Vector2 menu_margin = {
+                (window_size.x - menu_size) / 2.0f,
+                (window_size.y - menu_size) / 2.0f,
+            };
+            Rectangle menu_rec = {
+                menu_margin.x,
+                menu_margin.y,
+                menu_size,
+                menu_size,
+            };
+            DrawRectangleRec(menu_rec, BLUE);
+        }
         EndDrawing();
     }
 
