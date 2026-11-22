@@ -26,6 +26,4 @@ typedef struct
     } snake;
 } SnakeGame;
 
-
-
 #endif
