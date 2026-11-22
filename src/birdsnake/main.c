@@ -1,4 +1,5 @@
 #include "birdsnake_assets.h"
+#include "draw.h"
 #include "raylib.h"
 #include <stdio.h>
 
@@ -47,12 +48,6 @@ static Vec2 update_window(bool fullscreen)
         ToggleBorderlessWindowed();
 
     return (Vec2){GetScreenWidth(), GetScreenHeight()};
-}
-
-static void draw_texture_scaled(Texture tex, Rectangle rec)
-{
-    Rectangle tex_rec = {0, 0, tex.width, tex.height};
-    DrawTexturePro(tex, tex_rec, rec, (Vector2){0}, 0, WHITE);
 }
 
 int main(void)
