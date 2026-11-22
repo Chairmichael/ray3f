@@ -6,12 +6,12 @@
 #include "raymath.h"
 
 #define SCR_WORLD_PADDING 0.05
-#define BOARD_LEN 4
+#define BOARD_LEN 5
 #define BOARD_LIMIT (BOARD_LEN - 1)
 #define SNAKE_MAX (BOARD_LEN * BOARD_LEN)
 #define START_SNAKE_LEN 3
 #define SPAWN_BUFFER 2
-#define GAME_SPEED 0.2
+#define GAME_SPEED 0.15
 #define SCORE_STRING_LEN 10
 #define INDEX(snake, i) (((snake)->tail + (i)) % SNAKE_MAX)
 #define CLAMP(value, min, max) (value < min ? min : value > max ? max \
