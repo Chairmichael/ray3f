@@ -114,7 +114,7 @@ void game_init(Rectangle *board_shape, Snake *snake, Vec2i *apple)
     get_board_size(board_shape);
     SetRandomSeed((unsigned int)time(NULL));
 
-    snake->dir = GetRandomValue(DIR_UP, DIR_RIGHT);
+    snake->dir = GetRandomValue(0, 3);
     snake->pending = snake->dir;
     int spawn_limit_left = 0, spawn_limit_top = 0;
     int spawn_limit_right = BOARD_LIMIT, spawn_limit_bottom = BOARD_LIMIT;
