@@ -77,47 +77,15 @@ int main(void)
 
     while (!WindowShouldClose())
     {
-        if (IsKeyPressed(KEY_ENTER))
-            ToggleBorderlessWindowed();
-        if (IsWindowResized())
-        {
-            x++;
-            snprintf(text, sizeof text, "%d", x);
-            window_size = update_window(false);
-            window_rect.width = window_size.x;
-            window_rect.height = window_size.y;
-            rect = (Rectangle){
-                window_size.x / 2 - window_size.x / 5 / 2,
-                window_size.y / 2 - window_size.y / 5 / 2,
-                window_size.x / 5,
-                window_size.x / 5,
-            };
-        }
+        if (IsKeyPressed(KEY_A) && IsKeyPressed(KEY_L))
+            printf("AL pressed\n");
+        int key, sum = 0;
+        while ((key = GetKeyPressed()))
+            sum++;
+        if (sum > 1)
+            printf("%d\n", sum);
         BeginDrawing();
         ClearBackground(GRAY);
-        draw_texture_scaled(apple_texture, window_rect);
-
-        DrawText("This is game text", 80, 50, 60, ORANGE);
-        DrawRectangleRec(rect, ORANGE);
-        DrawText(text, 10, 10, 40, ORANGE);
-        if (IsKeyDown(KEY_SPACE))
-        {
-            // gray background
-            DrawRectangleRec(window_rect, (Color){0, 0, 0, 150});
-            float menu_scale = 0.7;
-            int menu_size = SMALLEST(window_size.x, window_size.y) * menu_scale;
-            Vector2 menu_margin = {
-                (window_size.x - menu_size) / 2.0f,
-                (window_size.y - menu_size) / 2.0f,
-            };
-            Rectangle menu_rec = {
-                menu_margin.x,
-                menu_margin.y,
-                menu_size,
-                menu_size,
-            };
-            DrawRectangleRec(menu_rec, BLUE);
-        }
         EndDrawing();
     }
 
