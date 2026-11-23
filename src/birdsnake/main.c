@@ -2,6 +2,7 @@
 #include "draw.h"
 #include "raylib.h"
 #include <stdio.h>
+#include <time.h>
 
 #define WIDTH_SCALE 0.65f
 #define WINDOWED_ASPECT_RATIO (3.0 / 2.0)
@@ -54,7 +55,7 @@ int main(void)
 {
     Vec2 window_size = setup_window(false);
     Rectangle window_rect = {0, 0, window_size.x, window_size.y};
-    SetRandomSeed(time());
+    SetRandomSeed(time(NULL));
 
     Rectangle board_shape;
 

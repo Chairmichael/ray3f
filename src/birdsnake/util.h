@@ -17,19 +17,23 @@ typedef enum
 typedef struct
 {
     Vector2 *arr;
-    size_t size, head, count;
-    bool isfull;
+    size_t capacity, head, count;
 } RingBuffer;
 
-RingBuffer create_ring_buffer(size_t size);
+static inline bool rb_is_full(RingBuffer rb)
+{
+    return rb.capacity == rb.count;
+}
+
+RingBuffer create_ring_buffer(size_t capacity);
 void free_ring_buffer(RingBuffer *rb);
-Vector2 peek_head_rb(RingBuffer rb);
-Vector2 peek_tail_rb(RingBuffer rb);
-Vector2 peek_element_rb(const RingBuffer *rb, size_t i);
-bool pop_tail_rb(RingBuffer *rb, Vector2 *out);
-bool pop_head_rb(RingBuffer *rb, Vector2 *out);
-bool append_rb(RingBuffer *rb, Vector2 vec);
-bool prepend_rb(RingBuffer *rb, Vector2 vec);
-bool contains_rb(RingBuffer rb, Vector2 vec);
+Vector2 rb_peek_head(RingBuffer rb);
+Vector2 rb_peek_tail(RingBuffer rb);
+Vector2 rb_peek_element(const RingBuffer *rb, size_t i);
+bool rb_pop_tail(RingBuffer *rb, Vector2 *out);
+bool rb_pop_head(RingBuffer *rb, Vector2 *out);
+bool rb_append(RingBuffer *rb, Vector2 vec);
+bool rb_prepend(RingBuffer *rb, Vector2 vec);
+bool rb_contains(RingBuffer rb, Vector2 vec);
 
 #endif

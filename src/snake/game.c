@@ -191,7 +191,7 @@ void game_step(GameStatus *status, Rectangle *board_shape, Snake *snake, Vec2i *
         check_apple(snake, apple);
         if (apple->x == -1 && apple->y == -1)
             *apple = (Vec2i){-100, -100};
-        *status = check_snake(snake);
+        *status = check_and_update_snake(snake);
     }
 }
 
@@ -359,7 +359,7 @@ void move_snake(Snake *snake)
     snake->tail = (snake->tail + 1) % SNAKE_MAX;
 }
 
-GameStatus check_snake(Snake *snake)
+GameStatus check_and_update_snake(Snake *snake)
 {
     if (len(snake) >= SNAKE_MAX)
         return GS_WIN;

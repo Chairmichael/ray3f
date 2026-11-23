@@ -58,7 +58,7 @@ Direction handle_input(Rectangle *board_shape, bool *restart, bool *paused, Game
 void move_snake(Snake *snake);
 void check_apple(Snake *snake, Vec2i *apple);
 Vec2i get_random_point_excluding(Snake *snake, int max_x, int max_y);
-GameStatus check_snake(Snake *snake);
+GameStatus check_and_update_snake(Snake *snake);
 void set_snake_dir(Direction cur_dir, Direction *pending_dir, Direction input_dir);
 void print_snake(Snake *snake);
 int len(Snake *snake);
