@@ -1,20 +1,18 @@
-#include "birdsnake_assets.h"
-#include "draw.h"
-#include "raylib.h"
+#include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+
+#include "raylib.h"
+
+#include "draw.h"
+#include "snake.h"
 
 #define WIDTH_SCALE 0.65f
 #define WINDOWED_ASPECT_RATIO (3.0 / 2.0)
 #define SMALLEST(x, y) (x < y ? x : y)
 #define LARGEST(x, y) (x > y ? x : y)
 
-typedef struct
-{
-    int x, y;
-} Vec2;
-
-static Vec2 setup_window(bool fullscreen)
+static Vector2 setup_window(bool fullscreen)
 {
     if (!IsWindowReady())
     {
@@ -25,7 +23,7 @@ static Vec2 setup_window(bool fullscreen)
 
     int monitor = GetCurrentMonitor();
     int width = GetMonitorWidth(monitor) * WIDTH_SCALE;
-    Vec2 size = {width, width / WINDOWED_ASPECT_RATIO};
+    Vector2 size = {(float)width, (float)(width / WINDOWED_ASPECT_RATIO)};
 
     if (!IsWindowFullscreen() && !fullscreen)
     {
@@ -41,52 +39,44 @@ static Vec2 setup_window(bool fullscreen)
     return size;
 }
 
-static Vec2 update_window(bool fullscreen)
+static Vector2 update_window(bool fullscreen)
 {
     if (!IsWindowFullscreen() && fullscreen)
         ToggleBorderlessWindowed();
     else if (IsWindowFullscreen() && !fullscreen)
         ToggleBorderlessWindowed();
 
-    return (Vec2){GetScreenWidth(), GetScreenHeight()};
+    return (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()};
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
-    Vec2 window_size = setup_window(false);
-    Rectangle window_rect = {0, 0, window_size.x, window_size.y};
+    bool fullscreen = false;
+    Vector2 window_size = setup_window(fullscreen);
     SetRandomSeed(time(NULL));
 
-    Rectangle board_shape;
+    Texture2D textures[TEXTURE_COUNT];
+    load_textures(textures);
 
-#ifdef RAY3F_birdsnake_ASSETS_H
-    Image apple_img = LoadImageFromMemory(".png", apple_png, apple_png_len);
-    Texture2D apple_texture = LoadTextureFromImage(apple_img);
-#else
-    Texture2D apple_texture = LoadTexture("assets/birdsnake/apple.png");
-#endif
-    int x = 0;
-    char text[12] = "0";
-
-    Rectangle rect = {
-        window_size.x / 2 - window_size.x / 5 / 2,
-        window_size.y / 2 - window_size.y / 5 / 2,
-        window_size.x / 5,
-        window_size.x / 5,
-    };
+    SnakeGame snakeG;
+    if (argc == 2)
+        snakeG = init_snakegame(atoi(argv[1]), atoi(argv[1]), DEFUALT_SNAKE_SIZE);
+    else if (argc == 4)
+        snakeG = init_snakegame(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
+    else
+        snakeG = init_snakegame(DEFUALT_BOARD_SIZE_X, DEFUALT_BOARD_SIZE_Y, DEFUALT_SNAKE_SIZE);
 
     while (!WindowShouldClose())
     {
-        if (IsKeyPressed(KEY_A) && IsKeyPressed(KEY_L))
-            printf("AL pressed\n");
-        int key, sum = 0;
-        while ((key = GetKeyPressed()))
-            sum++;
-        if (sum > 1)
-            printf("%d\n", sum);
+        if (IsWindowResized())
+            window_size = update_window(false);
+
         BeginDrawing();
         ClearBackground(GRAY);
         EndDrawing();
+
+        if (IsKeyPressed(KEY_ENTER))
+            fullscreen = !fullscreen;
     }
 
     if (IsWindowReady())

@@ -7,7 +7,10 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#define DEFUALT_BOARD_SIZE_X 5
+#define DEFUALT_BOARD_SIZE_Y 6
 #define MIN_SNAKE_SIZE 3
+#define DEFUALT_SNAKE_SIZE MIN_SNAKE_SIZE
 #define MIN_BOARD_SIZE (MIN_SNAKE_SIZE + 1)
 #define MAX_BOARD_SIZE 1000
 #define MAX_SNAKE_SIZE (MAX_BOARD_SIZE - 1)
