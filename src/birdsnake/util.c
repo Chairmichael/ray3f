@@ -8,9 +8,10 @@ RingBuffer create_ring_buffer(size_t size)
     return rb;
 }
 
-void free_ring_buffer(RingBuffer rb)
+void free_ring_buffer(RingBuffer *rb)
 {
-    MemFree(rb.arr);
+    MemFree(rb->arr);
+    rb = NULL;
 }
 
 Vector2 peek_head_rb(RingBuffer rb)
@@ -20,59 +21,56 @@ Vector2 peek_head_rb(RingBuffer rb)
 
 Vector2 peek_tail_rb(RingBuffer rb)
 {
-    return rb.arr[rb.tail];
+    return rb.arr[tail_idx(&rb)];
 }
 
-// Returns element i places back from the head
-Vector2 peek_element_rb(RingBuffer rb, size_t i)
+static size_t tail_idx(const RingBuffer *rb)
 {
-    return rb.arr[(rb.head - i) % rb.size];
+    return (rb->head + rb->size - (rb->count - 1)) % rb->size; // only valid if count > 0
 }
 
-Vector2 pop_tail_rb(RingBuffer *rb)
+bool prepend_rb(RingBuffer *rb, Vector2 v)
 {
-    if (rb->isfull || rb->head != rb->tail)
-    {
-        Vector2 tail_element = peek_tail_rb(*rb);
-        rb->tail = (rb->tail + 1) % rb->size;
-        rb->isfull = false;
-        return tail_element;
-    }
-    return (Vector2){-1, -1};
-}
-
-Vector2 pop_head_rb(RingBuffer *rb)
-{
-    if (rb->isfull || rb->head != rb->tail)
-    {
-        Vector2 head_element = peek_head_rb(*rb);
-        rb->head = rb->head == 0 ? rb->size - 1 : rb->head - 1;
-        rb->isfull = false;
-        return head_element;
-    }
-    return (Vector2){-1, -1};
-}
-
-// Add element to tail (new tail)
-bool append_rb(RingBuffer *rb, Vector2 vec)
-{
-    if (rb->isfull)
-        return false;
-    rb->tail = rb->tail == 0 ? rb->size - 1 : rb->tail - 1;
-    rb->arr[rb->tail] = vec;
-    if (rb->head == rb->tail)
-        rb->isfull = true;
-    return true;
-}
-
-// Add element to head (new head)
-bool prepend_rb(RingBuffer *rb, Vector2 vec)
-{
-    if (rb->isfull)
+    if (rb->count == rb->size)
         return false;
     rb->head = (rb->head + 1) % rb->size;
-    rb->arr[rb->head] = vec;
-    if (rb->head == rb->tail)
-        rb->isfull = true;
+    rb->arr[rb->head] = v;
+    rb->count++;
     return true;
+}
+
+bool append_rb(RingBuffer *rb, Vector2 v)
+{
+    if (rb->count == rb->size)
+        return false;
+    if (rb->count == 0)
+        return prepend_rb(rb, v);
+    size_t t = (tail_idx(rb) + rb->size - 1) % rb->size;
+    rb->arr[t] = v;
+    rb->count++;
+    return true;
+}
+
+bool pop_tail_rb(RingBuffer *rb, Vector2 *out)
+{
+    if (rb->count == 0)
+        return false;
+    *out = rb->arr[tail_idx(rb)];
+    rb->count--;
+    return true;
+}
+
+bool pop_head_rb(RingBuffer *rb, Vector2 *out)
+{
+    if (rb->count == 0)
+        return false;
+    *out = rb->arr[rb->head];
+    rb->head = (rb->head + rb->size - 1) % rb->size;
+    rb->count--;
+    return true;
+}
+
+Vector2 peek_element_rb(const RingBuffer *rb, size_t i) // i < count
+{
+    return rb->arr[(rb->head + rb->size - i) % rb->size];
 }
