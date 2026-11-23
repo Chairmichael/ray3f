@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include "raylib.h"
+#include "raymath.h"
 
 typedef enum
 {
@@ -29,5 +30,6 @@ bool pop_tail_rb(RingBuffer *rb, Vector2 *out);
 bool pop_head_rb(RingBuffer *rb, Vector2 *out);
 bool append_rb(RingBuffer *rb, Vector2 vec);
 bool prepend_rb(RingBuffer *rb, Vector2 vec);
+bool contains_rb(RingBuffer rb, Vector2 vec);
 
 #endif

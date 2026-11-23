@@ -54,6 +54,7 @@ int main(void)
 {
     Vec2 window_size = setup_window(false);
     Rectangle window_rect = {0, 0, window_size.x, window_size.y};
+    SetRandomSeed(time());
 
     Rectangle board_shape;
 

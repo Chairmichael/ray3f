@@ -2,8 +2,12 @@
 #define SNAKE_H
 
 #include "raylib.h"
+#include "raymath.h"
 #include "util.h"
-#include <cstdlib>
+#include <stddef.h>
+
+#define MIN_SNAKE_SIZE 3
+#define MIN_BOARD_SIZE (MIN_SNAKE_SIZE + 1)
 
 typedef enum
 {
@@ -18,12 +22,12 @@ typedef struct
 {
     Rectangle board;
     GameState state;
-    struct
-    {
-        Vector2 *body;
-        size_t head, tail;
-        Direction dir, pending;
-    } snake;
+    RingBuffer snake;
+    Direction snake_dir, snake_pending;
+    Vector2 apple;
 } SnakeGame;
+
+SnakeGame init_snake_game(size_t tiles_x, size_t tiles_y, size_t snake_size);
+void free_snake_game(SnakeGame game);
 
 #endif

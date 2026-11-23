@@ -74,3 +74,13 @@ Vector2 peek_element_rb(const RingBuffer *rb, size_t i) // i < count
 {
     return rb->arr[(rb->head + rb->size - i) % rb->size];
 }
+
+bool contains_rb(RingBuffer rb, Vector2 vec)
+{
+    for (size_t i = 0; i < rb.count; i++)
+    {
+        if (Vector2Equals(peek_element_rb(&rb, i), vec))
+            return true;
+    }
+    return false;
+}
